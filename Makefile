@@ -34,7 +34,7 @@ release:
 	$(CARGO) set-version $(VERSION)
 	git commit -am "Release v$(VERSION)"
 	git tag v$(VERSION)
-	git push origin main --tags
+	git push origin master --tags
 
 ## 🔖 Shortcut per creare un tag senza bump automatico
 tag:
