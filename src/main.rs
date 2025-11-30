@@ -1,6 +1,30 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::{Path, PathBuf};
 use xmlwriter::XmlWriter;
+
+/// Risale la gerarchia fino a trovare Cargo.toml e restituisce la root del progetto
+fn project_root() -> PathBuf {
+    let mut dir = std::env::current_dir().unwrap();
+    loop {
+        if dir.join("Cargo.toml").exists() {
+            return dir;
+        }
+        if !dir.pop() {
+            break;
+        }
+    }
+    panic!("Cargo.toml non trovato!");
+}
+
+/// Converte un path assoluto in relativo rispetto alla root del progetto
+fn relativize(path: &str, base: &Path) -> String {
+    let abs = Path::new(path);
+    match abs.strip_prefix(base) {
+        Ok(rel) => rel.to_string_lossy().to_string(),
+        Err(_) => abs.to_string_lossy().to_string(),
+    }
+}
 
 fn main() -> std::io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
@@ -17,6 +41,7 @@ fn main() -> std::io::Result<()> {
     w.write_attribute("version", "1");
 
     let mut current_file: Option<String> = None;
+    let base_dir = project_root();
 
     for line in reader.lines() {
         let line = line?;
@@ -24,7 +49,9 @@ fn main() -> std::io::Result<()> {
             if current_file.is_some() {
                 w.end_element(); // chiudi file precedente
             }
-            current_file = Some(line[3..].to_string());
+            let abs_path = &line[3..];
+            let rel_path = relativize(abs_path, &base_dir);
+            current_file = Some(rel_path);
             w.start_element("file");
             w.write_attribute("path", current_file.as_ref().unwrap());
         } else if line.starts_with("DA:") {
