@@ -1,0 +1,11 @@
+[package]
+name = "lcov2generic"
+version = "0.1.0"
+edition = "2021"
+description = "Convertitore LCOV → SonarQube Generic Coverage XML"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/afurlane/lcov2generic"
+homepage = "https://github.com/afurlane/lcov2generic"
+
+[dependencies]
+xmlwriter = "0.1"
